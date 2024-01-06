@@ -10,10 +10,9 @@ func Test_TraverserProperlyWorks(t *testing.T) {
 }
 
 func Test_IsValidPath(t *testing.T) {
-	// t.Parallel()
-	assert.True(t, isValidPath("/", []string{""}))
+	assert.True(t, isValidPath("/", &[]string{""}))
 }
 
 func Test_IsValidPathProperlyUsesIgnores(t *testing.T) {
-	assert.False(t, isValidPath("/some/string", []string{""}))
+	assert.False(t, isValidPath("/some/string", &[]string{""}))
 }
