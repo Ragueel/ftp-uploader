@@ -10,15 +10,6 @@ import (
 	"github.com/jlaffaye/ftp"
 )
 
-type Uploader interface {
-	UploadFile(filePath string, uploadFilePath string) UploadTask
-}
-
-type UploadTask struct {
-	Progress <-chan int
-	Err      error
-}
-
 type FtpUploader struct {
 	Conn *ftp.ServerConn
 }
@@ -36,7 +27,7 @@ func NewFtpUploader(ctx context.Context, authConfig config.AppAuthConfig) (*FtpU
 	return &FtpUploader{Conn: ftpClient}, nil
 }
 
-func (uploader *FtpUploader) UploadFile(filePath string, uploadFilePath string) UploadTask {
+func (uploader *FtpUploader) UploadFile(filePath string, uploadFilePath string) *UploadTask {
 	progressChan := make(chan int)
 
 	task := UploadTask{
@@ -63,5 +54,5 @@ func (uploader *FtpUploader) UploadFile(filePath string, uploadFilePath string) 
 		progressChan <- 100
 	}()
 
-	return task
+	return &task
 }

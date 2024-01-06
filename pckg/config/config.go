@@ -4,13 +4,13 @@ type AppAuthConfig struct {
 	Username string
 	Password string
 	Host     string
-	Name     string
 }
 
 type UploadConfig struct {
 	AuthConfig     AppAuthConfig
 	LocalRootPath  string
 	UploadRootPath string
+	Name           string
 	IgnorePaths    *[]string
 }
 
