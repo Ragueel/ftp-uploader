@@ -25,8 +25,8 @@ func Test_ProperlyInitializesConnection(t *testing.T) {
 	ftpUploader, err := NewFtpUploader(timeoutCtx, authConfig)
 	assert.NoError(t, err)
 	assert.NotNil(t, ftpUploader)
-	err = ftpUploader.Close()
 
+	err = ftpUploader.Close()
 	assert.NoError(t, err)
 }
 
