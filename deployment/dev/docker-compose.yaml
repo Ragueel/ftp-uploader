@@ -9,11 +9,11 @@ services:
       - "21000-21010:21000-21010"
     networks:
       ftp-uploaders:
-        ipv4_address: 10.5.0.5
+        ipv4_address: 11.6.0.5
 networks:
   ftp-uploaders:
     driver: bridge
     ipam:
       config:
-        - subnet: 10.5.0.0/16
-          gateway: 10.5.0.1
+        - subnet: 11.6.0.0/16
+          gateway: 11.6.0.1

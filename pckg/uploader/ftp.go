@@ -17,7 +17,7 @@ type FtpUploader struct {
 func NewFtpUploader(ctx context.Context, authConfig config.AppAuthConfig) (*FtpUploader, error) {
 	ftpClient, err := ftp.Dial(authConfig.Host, ftp.DialWithContext(ctx))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to dial to remote host: %w", err)
 	}
 	err = ftpClient.Login(authConfig.Username, authConfig.Password)
 	if err != nil {
@@ -25,6 +25,10 @@ func NewFtpUploader(ctx context.Context, authConfig config.AppAuthConfig) (*FtpU
 	}
 
 	return &FtpUploader{Conn: ftpClient}, nil
+}
+
+func (uploader *FtpUploader) Close() error {
+	return uploader.Conn.Quit()
 }
 
 func (uploader *FtpUploader) UploadFile(filePath string, uploadFilePath string) *UploadTask {
@@ -44,6 +48,7 @@ func (uploader *FtpUploader) UploadFile(filePath string, uploadFilePath string) 
 			return
 		}
 		reader := bufio.NewReader(file)
+
 		progressChan <- 0
 
 		err = uploader.Conn.Stor(uploadFilePath, reader)
