@@ -1,6 +1,6 @@
 package traverser
 
-type TraversalInfo struct {
+type TraversalRequest struct {
 	TraversalDirectory string
 	ExcludedPaths      *[]string
 }
