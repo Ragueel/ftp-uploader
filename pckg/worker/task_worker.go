@@ -11,7 +11,7 @@ type Result struct {
 	Err error
 }
 
-type WorkerPool struct {
+type Pool struct {
 	WorkersCount int
 	jobs         chan Job
 	Results      chan Result
@@ -33,15 +33,15 @@ func (job Job) execute(ctx context.Context) Result {
 	return Result{Val: value}
 }
 
-func NewWorker(workersCount int) *WorkerPool {
-	return &WorkerPool{
+func NewPool(workersCount int) *Pool {
+	return &Pool{
 		WorkersCount: workersCount,
 		jobs:         make(chan Job, workersCount),
 		Results:      make(chan Result, workersCount),
 	}
 }
 
-func (worker *WorkerPool) listen(ctx context.Context, jobs <-chan Job) {
+func (worker *Pool) listen(ctx context.Context, jobs <-chan Job) {
 	for {
 		select {
 		case job, ok := <-jobs:
@@ -55,7 +55,7 @@ func (worker *WorkerPool) listen(ctx context.Context, jobs <-chan Job) {
 	}
 }
 
-func (worker *WorkerPool) Run(ctx context.Context, jobs <-chan Job) {
+func (worker *Pool) Run(ctx context.Context, jobs <-chan Job) {
 	var wg sync.WaitGroup
 
 	wg.Add(1)
@@ -95,6 +95,6 @@ func runJobs(ctx context.Context, wg *sync.WaitGroup, jobs <-chan Job, results c
 	}
 }
 
-func (worker *WorkerPool) Close() {
+func (worker *Pool) Close() {
 	close(worker.Results)
 }

@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func MockWorkerFunction(ctx context.Context) (interface{}, error) {
+func MockWorkerFunction(_ context.Context) (interface{}, error) {
 	return "ok", nil
 }
 
 func Test_WorkerCompletesJobs(t *testing.T) {
-	worker := NewWorker(2)
+	worker := NewPool(2)
 	jobsQueue := make(chan Job)
 	ctx := context.TODO()
 	testingContext, cancel := context.WithTimeout(ctx, 2*time.Second)

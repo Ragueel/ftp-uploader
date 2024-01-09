@@ -42,7 +42,7 @@ func (uploadController *UploadController) UploadFromConfig(ctx context.Context, 
 		TraversalDirectory: conf.LocalRootPath, ExcludedPaths: *conf.IgnorePaths,
 	})
 
-	uploadWorker := worker.NewWorker(1)
+	uploadWorker := worker.NewPool(1)
 
 	uploadJobsChan := make(chan worker.Job, uploadWorker.WorkersCount)
 	var wg sync.WaitGroup

@@ -70,7 +70,7 @@ func Test_TraverserWalProperlyIgnoresFiles(t *testing.T) {
 	assert.Equal(t, file1.Name(), resultPath[0])
 }
 
-func Test_TraverserIgnoresDirectiores(t *testing.T) {
+func Test_TraverserIgnoresDirectories(t *testing.T) {
 	testingDir, _ := os.MkdirTemp("", "testing")
 
 	file1, _ := os.CreateTemp(testingDir, "file.txt")

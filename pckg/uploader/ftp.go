@@ -14,7 +14,7 @@ import (
 
 type FtpUploader struct {
 	Conn                  *ftp.ServerConn
-	precreatedDirectories map[string]bool
+	PreCreatedDirectories map[string]bool
 }
 
 func NewFtpUploader(ctx context.Context, authConfig config.AppAuthConfig) (*FtpUploader, error) {
@@ -27,7 +27,7 @@ func NewFtpUploader(ctx context.Context, authConfig config.AppAuthConfig) (*FtpU
 		return nil, fmt.Errorf("failed to login: %w", err)
 	}
 	// TODO: Add connection pooling
-	return &FtpUploader{Conn: ftpClient, precreatedDirectories: make(map[string]bool)}, nil
+	return &FtpUploader{Conn: ftpClient, PreCreatedDirectories: make(map[string]bool)}, nil
 }
 
 func (uploader *FtpUploader) Close() error {
@@ -41,13 +41,13 @@ func (uploader *FtpUploader) createDirectoryIfNotExists(uploadPath string) error
 		return nil
 	}
 
-	if uploader.precreatedDirectories[uploadFilePathDir] {
-		return nil
-	}
-
 	directories := strings.Split(uploadFilePathDir, "/")
 
 	for i := range directories {
+		if uploader.PreCreatedDirectories[uploadFilePathDir] {
+			continue
+		}
+
 		remoteDir := filepath.Join(directories[:i+1]...)
 
 		err := uploader.Conn.MakeDir(remoteDir)
@@ -69,7 +69,7 @@ func (uploader *FtpUploader) createDirectoryIfNotExists(uploadPath string) error
 			}
 		}
 
-		uploader.precreatedDirectories[uploadFilePathDir] = true
+		uploader.PreCreatedDirectories[uploadFilePathDir] = true
 
 	}
 	return nil
