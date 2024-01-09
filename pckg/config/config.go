@@ -14,7 +14,11 @@ type UploadConfig struct {
 	IgnorePaths    *[]string
 }
 
-func NewAuthConfig() AppAuthConfig {
+func NewAuthConfigFromEnv() AppAuthConfig {
+	return AppAuthConfig{}
+}
+
+func NewAuthConfigFromParams() AppAuthConfig {
 	return AppAuthConfig{}
 }
 
