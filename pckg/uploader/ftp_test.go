@@ -57,3 +57,33 @@ func Test_UploadFileAtPathWorks(t *testing.T) {
 
 	assert.Equal(t, "Hello world", string(buf))
 }
+
+func Test_UploadInSubdirectoryWokrs(t *testing.T) {
+	ftpUploader, _ := NewFtpUploader(context.TODO(), authConfig)
+	uploadPath := "subdir_sample/test_1/asdasd/test.txt"
+
+	f, err := os.CreateTemp("", "sample.txt")
+	f.Write([]byte("Hello world"))
+
+	assert.NoError(t, err)
+
+	defer os.Remove(f.Name())
+
+	task := ftpUploader.UploadFile(f.Name(), uploadPath)
+
+	assert.NotNil(t, task)
+
+	for progress := range task.Progress {
+		assert.True(t, progress >= 0)
+	}
+
+	assert.NoError(t, task.Err)
+
+	file, err := ftpUploader.Conn.Retr(uploadPath)
+	assert.NoError(t, err)
+
+	buf, err := io.ReadAll(file)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "Hello world", string(buf))
+}

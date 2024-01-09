@@ -18,7 +18,7 @@ func Test_TraverserProperlyWorks(t *testing.T) {
 
 	defer os.RemoveAll(testingDir)
 
-	filesChan := GetAllFilesInDirectory(TraversalRequest{TraversalDirectory: testingDir, ExcludedPaths: &[]string{}})
+	filesChan := GetAllFilesInDirectory(TraversalRequest{TraversalDirectory: testingDir, ExcludedPaths: []string{}})
 	var resultPath []string
 	for path := range filesChan {
 		resultPath = append(resultPath, path)
@@ -57,7 +57,7 @@ func Test_TraverserWalProperlyIgnoresFiles(t *testing.T) {
 
 	filesChan := GetAllFilesInDirectory(TraversalRequest{
 		TraversalDirectory: testingDir,
-		ExcludedPaths: &[]string{
+		ExcludedPaths: []string{
 			testingSubDir,
 		},
 	})
@@ -84,7 +84,7 @@ func Test_TraverserIgnoresDirectiores(t *testing.T) {
 
 	filesChan := GetAllFilesInDirectory(TraversalRequest{
 		TraversalDirectory: testingDir,
-		ExcludedPaths: &[]string{
+		ExcludedPaths: []string{
 			testingSubDir,
 		},
 	})

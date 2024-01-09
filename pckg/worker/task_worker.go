@@ -11,8 +11,8 @@ type Result struct {
 	Err error
 }
 
-type Worker struct {
-	workersCount int
+type WorkerPool struct {
+	WorkersCount int
 	jobs         chan Job
 	Results      chan Result
 }
@@ -26,7 +26,6 @@ type Job struct {
 
 func (job Job) execute(ctx context.Context) Result {
 	value, err := job.ExecFn(ctx)
-	fmt.Println("Executed job")
 	if err != nil {
 		return Result{Err: err}
 	}
@@ -34,15 +33,15 @@ func (job Job) execute(ctx context.Context) Result {
 	return Result{Val: value}
 }
 
-func NewWorker(workersCount int) *Worker {
-	return &Worker{
-		workersCount: workersCount,
+func NewWorker(workersCount int) *WorkerPool {
+	return &WorkerPool{
+		WorkersCount: workersCount,
 		jobs:         make(chan Job, workersCount),
 		Results:      make(chan Result, workersCount),
 	}
 }
 
-func (worker *Worker) listen(ctx context.Context, jobs <-chan Job) {
+func (worker *WorkerPool) listen(ctx context.Context, jobs <-chan Job) {
 	for {
 		select {
 		case job, ok := <-jobs:
@@ -56,7 +55,7 @@ func (worker *Worker) listen(ctx context.Context, jobs <-chan Job) {
 	}
 }
 
-func (worker *Worker) Run(ctx context.Context, jobs <-chan Job) {
+func (worker *WorkerPool) Run(ctx context.Context, jobs <-chan Job) {
 	var wg sync.WaitGroup
 
 	wg.Add(1)
@@ -68,9 +67,9 @@ func (worker *Worker) Run(ctx context.Context, jobs <-chan Job) {
 		fmt.Println("Finishing listening")
 	}()
 
-	wg.Add(worker.workersCount)
+	wg.Add(worker.WorkersCount)
 	go func() {
-		for i := 0; i < worker.workersCount; i++ {
+		for i := 0; i < worker.WorkersCount; i++ {
 			go runJobs(ctx, &wg, worker.jobs, worker.Results)
 		}
 	}()
@@ -86,7 +85,6 @@ func runJobs(ctx context.Context, wg *sync.WaitGroup, jobs <-chan Job, results c
 			if !ok {
 				return
 			}
-			fmt.Println("Got job")
 
 			results <- job.execute(ctx)
 		case <-ctx.Done():
@@ -97,6 +95,6 @@ func runJobs(ctx context.Context, wg *sync.WaitGroup, jobs <-chan Job, results c
 	}
 }
 
-func (worker *Worker) Close() {
+func (worker *WorkerPool) Close() {
 	close(worker.Results)
 }

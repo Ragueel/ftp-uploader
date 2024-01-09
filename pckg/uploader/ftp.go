@@ -6,12 +6,15 @@ import (
 	"fmt"
 	"ftp-uploader/pckg/config"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/jlaffaye/ftp"
 )
 
 type FtpUploader struct {
-	Conn *ftp.ServerConn
+	Conn                  *ftp.ServerConn
+	precreatedDirectories map[string]bool
 }
 
 func NewFtpUploader(ctx context.Context, authConfig config.AppAuthConfig) (*FtpUploader, error) {
@@ -23,14 +26,56 @@ func NewFtpUploader(ctx context.Context, authConfig config.AppAuthConfig) (*FtpU
 	if err != nil {
 		return nil, fmt.Errorf("failed to login: %w", err)
 	}
-
-	return &FtpUploader{Conn: ftpClient}, nil
+	// TODO: Add connection pooling
+	return &FtpUploader{Conn: ftpClient, precreatedDirectories: make(map[string]bool)}, nil
 }
 
 func (uploader *FtpUploader) Close() error {
 	return uploader.Conn.Quit()
 }
 
+func (uploader *FtpUploader) createDirectoryIfNotExists(uploadPath string) error {
+	uploadFilePathDir := filepath.Dir(uploadPath)
+	fmt.Println(uploadFilePathDir)
+	if uploadFilePathDir == "." {
+		return nil
+	}
+
+	if uploader.precreatedDirectories[uploadFilePathDir] {
+		return nil
+	}
+
+	directories := strings.Split(uploadFilePathDir, "/")
+
+	for i := range directories {
+		remoteDir := filepath.Join(directories[:i+1]...)
+
+		err := uploader.Conn.MakeDir(remoteDir)
+		if err != nil {
+			currentDir, err := uploader.Conn.CurrentDir()
+			if err != nil {
+				return fmt.Errorf("could not get current directory: %w", err)
+			}
+
+			err = uploader.Conn.ChangeDir(remoteDir)
+
+			if err != nil {
+				return fmt.Errorf("failed to create ftp directory: %w", err)
+			}
+
+			err = uploader.Conn.ChangeDir(currentDir)
+			if err != nil {
+				return fmt.Errorf("failed to reset directory: %w", err)
+			}
+		}
+
+		uploader.precreatedDirectories[uploadFilePathDir] = true
+
+	}
+	return nil
+}
+
+// TODO: Add proper context cancelation
 func (uploader *FtpUploader) UploadFile(filePath string, uploadFilePath string) *UploadTask {
 	progressChan := make(chan int)
 
@@ -41,6 +86,11 @@ func (uploader *FtpUploader) UploadFile(filePath string, uploadFilePath string) 
 
 	go func() {
 		defer close(progressChan)
+		err := uploader.createDirectoryIfNotExists(uploadFilePath)
+		if err != nil {
+			task.Err = err
+			return
+		}
 
 		file, err := os.Open(filePath)
 		if err != nil {

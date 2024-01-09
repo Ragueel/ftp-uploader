@@ -27,7 +27,7 @@ func GetAllFilesInDirectory(traversalRequest TraversalRequest) <-chan string {
 				return err
 			}
 
-			if !isValidPath(path, *traversalRequest.ExcludedPaths) {
+			if !isValidPath(path, traversalRequest.ExcludedPaths) {
 				return nil
 			}
 
