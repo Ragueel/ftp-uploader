@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const ConfigFileName = "ftp-uploader.yaml"
+const DefaultFileName = "ftp-uploader.yaml"
 
 type AuthCredentials struct {
 	Username string `yaml:"username"`
@@ -89,7 +89,11 @@ func readIgnoreFile(ignoreFilePath string) ([]string, error) {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		ignoreLines = append(ignoreLines, scanner.Text())
+		text := scanner.Text()
+		if text == "" {
+			continue
+		}
+		ignoreLines = append(ignoreLines, text)
 	}
 
 	return ignoreLines, nil

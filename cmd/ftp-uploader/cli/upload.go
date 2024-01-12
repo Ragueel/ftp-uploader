@@ -29,11 +29,11 @@ var UploadCommand = &cobra.Command{
 func init() {
 	viperEnvs := viper.New()
 	viperEnvs.SetEnvPrefix("FTP_UPLOADER")
-	viperEnvs.BindEnv("USERNAME")
-	viperEnvs.BindEnv("PASSWORD")
-	viperEnvs.BindEnv("HOST")
-	viperEnvs.BindEnv("ROOT_CONFIG_PATH")
-	viperEnvs.SetDefault("ROOT_CONFIG_PATH", config.ConfigFileName)
+	_ = viperEnvs.BindEnv("USERNAME")
+	_ = viperEnvs.BindEnv("PASSWORD")
+	_ = viperEnvs.BindEnv("HOST")
+	_ = viperEnvs.BindEnv("ROOT_CONFIG_PATH")
+	viperEnvs.SetDefault("ROOT_CONFIG_PATH", config.DefaultFileName)
 
 	UploadCommand.Flags().StringVarP(&configName, "config", "c", "", "Name of your config")
 	UploadCommand.Flags().StringVarP(&username, "username", "u", viperEnvs.GetString("USERNAME"), "Username to use")

@@ -25,7 +25,7 @@ func runInit(_ *cobra.Command, _ []string) {
 		return
 	}
 
-	file, err := os.Create(config.ConfigFileName)
+	file, err := os.Create(config.DefaultFileName)
 	if err != nil {
 		fmt.Printf("Failed to create wile %s\n", err)
 		return
@@ -37,7 +37,11 @@ func runInit(_ *cobra.Command, _ []string) {
 		}
 	}()
 
-	file.Write([]byte(string(result)))
+	_, err = file.Write([]byte(string(result)))
+	if err != nil {
+		fmt.Printf("Could not write into file: %s\n", err)
+		return
+	}
 
 	fmt.Println("Initialized default `ftp-uploader.yaml` file")
 }

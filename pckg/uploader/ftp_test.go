@@ -58,7 +58,7 @@ func Test_UploadFileAtPathWorks(t *testing.T) {
 	assert.Equal(t, "Hello world", string(buf))
 }
 
-func Test_UploadInSubdirectoryWokrs(t *testing.T) {
+func Test_UploadInSubdirectoryWorks(t *testing.T) {
 	ftpUploader, _ := NewFtpUploader(context.TODO(), authConfig)
 	uploadPath := "subdir_sample/test_1/asdasd/test.txt"
 

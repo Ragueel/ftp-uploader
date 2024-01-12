@@ -8,32 +8,46 @@ on:
     branches:
       - main
       - release/*
-  pull_request:
-    branches:
-      - main
 
 jobs:
 
-  build:
+  test:
     runs-on: ubuntu-latest
     services:
       ftp-server:
         image: delfer/alpine-ftp-server
         env:
           USERS: "user|password"
-        ports: 
+        ports:
           - 20021:21
           - 21000-21010:21000-21010
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.21'
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
 
-    - name: Build
-      run: go build -v ./...
+      - name: Build
+        run: go build -v ./...
 
-    - name: Test
-      run: go test -v ./...
+      - name: Test
+        run: go test -v ./...
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      - name: Build
+        run: go build -o ./builds/ftp-uploader ./cmd/ftp-uploader/main.go
+      - name: Store artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: binaries
+          path: ./builds/ftp-uploader
+          retention-days: 5
