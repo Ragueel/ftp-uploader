@@ -27,7 +27,7 @@ func runInit(_ *cobra.Command, _ []string) {
 
 	file, err := os.Create(config.DefaultFileName)
 	if err != nil {
-		fmt.Printf("Failed to create wile %s\n", err)
+		fmt.Printf("Failed to create file %s\n", err)
 		return
 	}
 

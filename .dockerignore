@@ -1,0 +1,5 @@
+*.md
+docs/
+.github/
+builds/
+deployment/

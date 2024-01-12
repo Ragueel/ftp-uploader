@@ -26,13 +26,13 @@ var rootCmd = &cobra.Command{
 	Long:  "ftp-uploader allows you to upload your files to your ftp server with gitignore like rules",
 	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Println(welcomeMessage)
-		fmt.Println("\n\nUse `upload` command to upload to ftp. Use `init` to initialize project")
+		fmt.Println("\n\nUse `ftp-uploader init` to initialize project. Use `ftp-uploader upload` command to upload to ftp.")
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(cli.UploadCommand)
 	rootCmd.AddCommand(cli.InitCommand)
+	rootCmd.AddCommand(cli.UploadCommand)
 }
 
 func main() {

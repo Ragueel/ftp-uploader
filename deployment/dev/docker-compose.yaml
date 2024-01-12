@@ -10,6 +10,13 @@ services:
     networks:
       ftp-uploaders:
         ipv4_address: 11.6.0.5
+  ftp-uploader:
+    image: ftp-uploader
+    build:
+      context: ../../
+      dockerfile: ./build/Dockerfile
+    command: ftp-uploader
+
 networks:
   ftp-uploaders:
     driver: bridge
