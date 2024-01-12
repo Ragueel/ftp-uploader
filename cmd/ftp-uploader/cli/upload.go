@@ -48,10 +48,10 @@ func runUpload(_ *cobra.Command, args []string) {
 	uploadCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	startUploading(args, uploadCtx)
+	startUploading(uploadCtx, args)
 }
 
-func startUploading(args []string, uploadCtx context.Context) {
+func startUploading(uploadCtx context.Context, args []string) {
 	fallbackAuthConfig := config.AuthCredentials{
 		Username: username,
 		Password: password,
