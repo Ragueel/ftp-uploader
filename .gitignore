@@ -22,3 +22,5 @@ go.work
 
 builds/
 .idea/
+
+ftp-uploader.yaml

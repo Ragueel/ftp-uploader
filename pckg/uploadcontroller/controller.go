@@ -7,6 +7,7 @@ import (
 	"ftp-uploader/pckg/traverser"
 	"ftp-uploader/pckg/uploader"
 	"ftp-uploader/pckg/worker"
+	"strings"
 	"sync"
 )
 
@@ -25,8 +26,9 @@ func NewFtpUploadController(ctx context.Context, authConfig config.AppAuthConfig
 }
 
 func (uploadController *UploadController) uploadFile(filePath, outputPath string) (interface{}, error) {
+	fmt.Printf("Uploading file: %s", filePath)
 	result := uploadController.Uploader.UploadFile(filePath, outputPath)
-	fmt.Println("Uploading file")
+
 	for progress := range result.Progress {
 		fmt.Printf("Progress: %d\n", progress)
 	}
@@ -39,7 +41,7 @@ func (uploadController *UploadController) uploadFile(filePath, outputPath string
 
 func (uploadController *UploadController) UploadFromConfig(ctx context.Context, conf config.UploadConfig) {
 	filesChan := traverser.GetAllFilesInDirectory(traverser.TraversalRequest{
-		TraversalDirectory: conf.LocalRootPath, ExcludedPaths: *conf.IgnorePaths,
+		TraversalDirectory: conf.LocalRootPath, ExcludedPaths: conf.IgnorePaths,
 	})
 
 	uploadWorker := worker.NewPool(1)
@@ -56,7 +58,7 @@ func (uploadController *UploadController) UploadFromConfig(ctx context.Context, 
 			job := worker.Job{
 				Descriptor: fmt.Sprintf("FileUploaderJob: %s\n", filePath),
 				ExecFn: func(ctx context.Context) (interface{}, error) {
-					return uploadController.uploadFile(filePath, fmt.Sprintf("%s/%s", conf.UploadRootPath, filePath))
+					return uploadController.uploadFile(filePath, fmt.Sprintf("%s/%s", conf.UploadRootPath, strings.TrimPrefix(filePath, conf.LocalRootPath)))
 				},
 			}
 			uploadJobsChan <- job

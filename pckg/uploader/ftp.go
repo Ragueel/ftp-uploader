@@ -36,7 +36,7 @@ func (uploader *FtpUploader) Close() error {
 
 func (uploader *FtpUploader) createDirectoryIfNotExists(uploadPath string) error {
 	uploadFilePathDir := filepath.Dir(uploadPath)
-	fmt.Println(uploadFilePathDir)
+
 	if uploadFilePathDir == "." {
 		return nil
 	}
@@ -44,11 +44,10 @@ func (uploader *FtpUploader) createDirectoryIfNotExists(uploadPath string) error
 	directories := strings.Split(uploadFilePathDir, "/")
 
 	for i := range directories {
-		if uploader.PreCreatedDirectories[uploadFilePathDir] {
+		remoteDir := filepath.Join(directories[:i+1]...)
+		if uploader.PreCreatedDirectories[remoteDir] {
 			continue
 		}
-
-		remoteDir := filepath.Join(directories[:i+1]...)
 
 		err := uploader.Conn.MakeDir(remoteDir)
 		if err != nil {
@@ -69,7 +68,7 @@ func (uploader *FtpUploader) createDirectoryIfNotExists(uploadPath string) error
 			}
 		}
 
-		uploader.PreCreatedDirectories[uploadFilePathDir] = true
+		uploader.PreCreatedDirectories[remoteDir] = true
 
 	}
 	return nil
@@ -103,7 +102,7 @@ func (uploader *FtpUploader) UploadFile(filePath string, uploadFilePath string) 
 
 		err = uploader.Conn.Stor(uploadFilePath, reader)
 		if err != nil {
-			task.Err = fmt.Errorf("failed to execute stor on file: %w", err)
+			task.Err = fmt.Errorf("failed to execute stor on file: %s %w", uploadFilePath, err)
 			return
 		}
 		progressChan <- 100
