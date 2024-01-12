@@ -43,6 +43,11 @@ func init() {
 }
 
 func runUpload(_ *cobra.Command, args []string) {
+	ctx := context.Background()
+
+	uploadCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	fallbackAuthConfig := config.AuthCredentials{
 		Username: username,
 		Password: password,
@@ -58,13 +63,9 @@ func runUpload(_ *cobra.Command, args []string) {
 	}
 
 	if configName == "" {
+		uploadEveryConfig(uploadCtx, rootConfig)
 		return
 	}
-
-	ctx := context.Background()
-
-	uploadCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
 
 	uploadConfig, ok := rootConfig.Configs[configName]
 	if !ok {
@@ -73,6 +74,13 @@ func runUpload(_ *cobra.Command, args []string) {
 	}
 
 	uploadWithConfig(uploadCtx, uploadConfig)
+}
+
+func uploadEveryConfig(ctx context.Context, rootConfig *config.Root) {
+	for key, val := range rootConfig.Configs {
+		fmt.Printf("Uploading: %s\n", key)
+		uploadWithConfig(ctx, val)
+	}
 }
 
 func uploadWithConfig(uploadCtx context.Context, uploadConfig config.UploadSettings) {
