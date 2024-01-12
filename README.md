@@ -23,7 +23,6 @@ configs:
   default:
     root: .
     uploadRoot: my-relative-path/
-    name: default
     ignorePaths:
       - ftp-uploader.yaml
 ```

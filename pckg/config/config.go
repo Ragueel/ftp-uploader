@@ -34,7 +34,6 @@ func NewEmptyUploadSettings() UploadSettings {
 	return UploadSettings{
 		LocalRootPath:  ".",
 		UploadRootPath: "my-relative-path/",
-		Name:           "default",
 		IgnorePaths:    []string{"ftp-uploader.yaml"},
 	}
 }
