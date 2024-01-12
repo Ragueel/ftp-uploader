@@ -11,10 +11,11 @@ import (
 )
 
 var (
-	configName string
-	username   string
-	password   string
-	host       string
+	configName     string
+	username       string
+	password       string
+	host           string
+	rootConfigPath string
 )
 
 var UploadCommand = &cobra.Command{
@@ -26,15 +27,19 @@ var UploadCommand = &cobra.Command{
 }
 
 func init() {
-	viper.SetEnvPrefix("FTP_UPLOADER")
-	viper.BindEnv("USERNAME")
-	viper.BindEnv("PASSWORD")
-	viper.BindEnv("HOST")
+	viperEnvs := viper.New()
+	viperEnvs.SetEnvPrefix("FTP_UPLOADER")
+	viperEnvs.BindEnv("USERNAME")
+	viperEnvs.BindEnv("PASSWORD")
+	viperEnvs.BindEnv("HOST")
+	viperEnvs.BindEnv("ROOT_CONFIG_PATH")
+	viperEnvs.SetDefault("ROOT_CONFIG_PATH", config.ConfigFileName)
 
 	UploadCommand.Flags().StringVarP(&configName, "config", "c", "", "Name of your config")
-	UploadCommand.Flags().StringVarP(&username, "username", "u", viper.GetString("USERNAME"), "Username to use")
-	UploadCommand.Flags().StringVarP(&password, "password", "p", viper.GetString("PASSWORD"), "Password to use")
-	UploadCommand.Flags().StringVarP(&host, "host", "s", viper.GetString("HOST"), "Host server to use")
+	UploadCommand.Flags().StringVarP(&username, "username", "u", viperEnvs.GetString("USERNAME"), "Username to use")
+	UploadCommand.Flags().StringVarP(&password, "password", "p", viperEnvs.GetString("PASSWORD"), "Password to use")
+	UploadCommand.Flags().StringVarP(&host, "host", "s", viperEnvs.GetString("HOST"), "Host server to use")
+	UploadCommand.Flags().StringVarP(&rootConfigPath, "root-config-path", "r", viperEnvs.GetString("ROOT_CONFIG_PATH"), "Path to your root config")
 }
 
 func runUpload(_ *cobra.Command, args []string) {
@@ -43,7 +48,7 @@ func runUpload(_ *cobra.Command, args []string) {
 		Password: password,
 		Host:     host,
 	}
-	rootConfig, err := config.NewRootFromFile(config.ConfigFileName, fallbackAuthConfig)
+	rootConfig, err := config.NewRootFromFile(rootConfigPath, fallbackAuthConfig)
 	if err != nil {
 		fmt.Printf("Invalid root config: %s\n", err)
 		return

@@ -46,7 +46,7 @@ func NewEmptyRoot() Root {
 func NewRootFromFile(configPath string, fallbackAuth AuthCredentials) (*Root, error) {
 	file, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not read file: %w", err)
+		return nil, fmt.Errorf("could not read file: %s %w", configPath, err)
 	}
 	rootConfig := Root{}
 	err = yaml.Unmarshal(file, &rootConfig)
