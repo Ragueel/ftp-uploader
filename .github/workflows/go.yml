@@ -46,7 +46,7 @@ jobs:
           go-version: '1.21'
 
       - name: Build
-        run: go build -gccgoflags "-s -w" -o ./builds/ftp-uploader ./cmd/ftp-uploader/main.go
+        run: go build -ldflags "-s -w" -o ./builds/ftp-uploader ./cmd/ftp-uploader/main.go
 
       - name: Store artifacts
         uses: actions/upload-artifact@v3
