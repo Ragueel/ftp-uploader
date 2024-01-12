@@ -68,11 +68,9 @@ func (worker *Pool) Run(ctx context.Context, jobs <-chan Job) {
 	}()
 
 	wg.Add(worker.WorkersCount)
-	go func() {
-		for i := 0; i < worker.WorkersCount; i++ {
-			go runJobs(ctx, &wg, worker.jobs, worker.Results)
-		}
-	}()
+	for i := 0; i < worker.WorkersCount; i++ {
+		go runJobs(ctx, &wg, worker.jobs, worker.Results)
+	}
 
 	wg.Wait()
 }
@@ -88,7 +86,6 @@ func runJobs(ctx context.Context, wg *sync.WaitGroup, jobs <-chan Job, results c
 
 			results <- job.execute(ctx)
 		case <-ctx.Done():
-			fmt.Println("Got error")
 			results <- Result{Err: ctx.Err()}
 			return
 		}

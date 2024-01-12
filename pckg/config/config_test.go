@@ -62,7 +62,7 @@ func Test_LoadingFixtureWithGitignoreFile(t *testing.T) {
 	file, err := os.CreateTemp("", "mock.yaml")
 	assert.NoError(t, err)
 	resultFile := fmt.Sprintf(uploaderFixtureWithIgnoreFile, ignoreFile.Name())
-	fmt.Println(resultFile)
+
 	_, err = file.Write([]byte(resultFile))
 	assert.NoError(t, err)
 

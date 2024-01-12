@@ -48,6 +48,10 @@ func runUpload(_ *cobra.Command, args []string) {
 	uploadCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
+	startUploading(args, uploadCtx)
+}
+
+func startUploading(args []string, uploadCtx context.Context) {
 	fallbackAuthConfig := config.AuthCredentials{
 		Username: username,
 		Password: password,
@@ -86,7 +90,7 @@ func uploadEveryConfig(ctx context.Context, rootConfig *config.Root) {
 func uploadWithConfig(uploadCtx context.Context, uploadConfig config.UploadSettings) {
 	uploadController, err := uploadcontroller.NewFtpUploadController(uploadCtx, *uploadConfig.AuthCredentials)
 	if err != nil {
-		fmt.Printf("Failed to created uploader: %s", err)
+		fmt.Printf("Failed to created uploader: %s\n", err)
 		return
 	}
 

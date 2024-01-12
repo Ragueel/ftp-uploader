@@ -44,7 +44,7 @@ func Test_IsValidPathWithMultipleIgnoreLines(t *testing.T) {
 	assert.False(t, isValidPath("/some/string.txt", []string{"*.exe", "*.txt"}))
 }
 
-func Test_TraverserWalProperlyIgnoresFiles(t *testing.T) {
+func Test_TraverserWalkProperlyIgnoresFiles(t *testing.T) {
 	testingDir, _ := os.MkdirTemp("", "testing")
 
 	file1, _ := os.CreateTemp(testingDir, "file.txt")

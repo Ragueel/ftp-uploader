@@ -57,9 +57,14 @@ func (uploadController *UploadController) UploadFromConfig(ctx context.Context, 
 		for filePath := range filesChan {
 			job := worker.Job{
 				Descriptor: fmt.Sprintf("FileUploaderJob: %s\n", filePath),
-				ExecFn: func(ctx context.Context) (interface{}, error) {
-					return uploadController.uploadFile(filePath, fmt.Sprintf("%s/%s", conf.UploadRootPath, strings.TrimPrefix(filePath, conf.LocalRootPath)))
-				},
+				ExecFn: func(path string) worker.ExecutionFn {
+					return func(ctx context.Context) (interface{}, error) {
+						trimmedFilePath := strings.TrimPrefix(path, conf.LocalRootPath)
+						uploadDestination := fmt.Sprintf("%s/%s", conf.UploadRootPath, trimmedFilePath)
+
+						return uploadController.uploadFile(path, uploadDestination)
+					}
+				}(filePath),
 			}
 			uploadJobsChan <- job
 		}
