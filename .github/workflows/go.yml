@@ -16,6 +16,13 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    services:
+      ftp-server:
+        image: delfer/alpine-ftp-server
+        env:
+          USERS: "user|password"
+        ports: 
+          - 20021:21
     steps:
     - uses: actions/checkout@v3
 
