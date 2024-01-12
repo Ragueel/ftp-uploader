@@ -10,7 +10,6 @@ on:
       - release/*
 
 jobs:
-
   test:
     runs-on: ubuntu-latest
     services:
@@ -36,15 +35,19 @@ jobs:
         run: go test -v ./...
 
   build:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.21'
+
       - name: Build
         run: go build -o ./builds/ftp-uploader ./cmd/ftp-uploader/main.go
+
       - name: Store artifacts
         uses: actions/upload-artifact@v3
         with:
