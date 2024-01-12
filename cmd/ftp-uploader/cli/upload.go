@@ -7,9 +7,15 @@ import (
 	"ftp-uploader/pckg/uploadcontroller"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-var configName string
+var (
+	configName string
+	username   string
+	password   string
+	host       string
+)
 
 var UploadCommand = &cobra.Command{
 	Use:     "upload",
@@ -20,11 +26,24 @@ var UploadCommand = &cobra.Command{
 }
 
 func init() {
+	viper.SetEnvPrefix("FTP_UPLOADER")
+	viper.BindEnv("USERNAME")
+	viper.BindEnv("PASSWORD")
+	viper.BindEnv("HOST")
+
 	UploadCommand.Flags().StringVarP(&configName, "config", "c", "", "Name of your config")
+	UploadCommand.Flags().StringVarP(&username, "username", "u", viper.GetString("USERNAME"), "Username to use")
+	UploadCommand.Flags().StringVarP(&password, "password", "p", viper.GetString("PASSWORD"), "Password to use")
+	UploadCommand.Flags().StringVarP(&host, "host", "s", viper.GetString("HOST"), "Host server to use")
 }
 
 func runUpload(_ *cobra.Command, args []string) {
-	rootConfig, err := config.NewRootConfigFromConfigFile(config.ConfigFileName)
+	fallbackAuthConfig := config.AuthCredentials{
+		Username: username,
+		Password: password,
+		Host:     host,
+	}
+	rootConfig, err := config.NewRootFromFile(config.ConfigFileName, fallbackAuthConfig)
 	if err != nil {
 		fmt.Printf("Invalid root config: %s\n", err)
 		return
@@ -51,8 +70,8 @@ func runUpload(_ *cobra.Command, args []string) {
 	uploadWithConfig(uploadCtx, uploadConfig)
 }
 
-func uploadWithConfig(uploadCtx context.Context, uploadConfig config.UploadConfig) {
-	uploadController, err := uploadcontroller.NewFtpUploadController(uploadCtx, *uploadConfig.AuthConfig)
+func uploadWithConfig(uploadCtx context.Context, uploadConfig config.UploadSettings) {
+	uploadController, err := uploadcontroller.NewFtpUploadController(uploadCtx, *uploadConfig.AuthCredentials)
 	if err != nil {
 		fmt.Printf("Failed to created uploader: %s", err)
 		return

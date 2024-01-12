@@ -6,33 +6,32 @@ import (
 	"os"
 	"strings"
 
-	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
 
 const ConfigFileName = "ftp-uploader.yaml"
 
-type AppAuthConfig struct {
+type AuthCredentials struct {
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 	Host     string `yaml:"host"`
 }
 
-type UploadConfig struct {
-	AuthConfig     *AppAuthConfig `yaml:"authConfig,omitempty"`
-	LocalRootPath  string         `yaml:"root"`
-	UploadRootPath string         `yaml:"uploadRoot"`
-	Name           string         `yaml:"name,omitempty"`
-	IgnoreFile     string         `yaml:"ignoreFile,omitempty"`
-	IgnorePaths    []string       `yaml:"ignorePaths"`
+type UploadSettings struct {
+	AuthCredentials *AuthCredentials `yaml:"authConfig,omitempty"`
+	LocalRootPath   string           `yaml:"root"`
+	UploadRootPath  string           `yaml:"uploadRoot"`
+	Name            string           `yaml:"name,omitempty"`
+	IgnoreFile      string           `yaml:"ignoreFile,omitempty"`
+	IgnorePaths     []string         `yaml:"ignorePaths"`
 }
 
-type RootConfig struct {
-	Configs map[string]UploadConfig `yaml:"configs"`
+type Root struct {
+	Configs map[string]UploadSettings `yaml:"configs"`
 }
 
-func NewEmptyUploadConfig() UploadConfig {
-	return UploadConfig{
+func NewEmptyUploadSettings() UploadSettings {
+	return UploadSettings{
 		LocalRootPath:  ".",
 		UploadRootPath: "my-relative-path/",
 		Name:           "default",
@@ -40,24 +39,24 @@ func NewEmptyUploadConfig() UploadConfig {
 	}
 }
 
-func NewEmptyRootConfig() RootConfig {
-	return RootConfig{Configs: map[string]UploadConfig{"default": NewEmptyUploadConfig()}}
+func NewEmptyRoot() Root {
+	return Root{Configs: map[string]UploadSettings{"default": NewEmptyUploadSettings()}}
 }
 
-func NewRootConfigFromConfigFile(configPath string) (*RootConfig, error) {
+func NewRootFromFile(configPath string, fallbackAuth AuthCredentials) (*Root, error) {
 	file, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not read file: %w", err)
 	}
-	rootConfig := RootConfig{}
+	rootConfig := Root{}
 	err = yaml.Unmarshal(file, &rootConfig)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse config: %w", err)
 	}
 
 	for name, uploadConfig := range rootConfig.Configs {
-		if uploadConfig.AuthConfig == nil {
-			uploadConfig.AuthConfig = NewAuthConfigFromEnv()
+		if uploadConfig.AuthCredentials == nil {
+			uploadConfig.AuthCredentials = &fallbackAuth
 		}
 		if uploadConfig.IgnoreFile != "" {
 			ignoreLines, err := readIgnoreFile(uploadConfig.IgnoreFile)
@@ -67,7 +66,9 @@ func NewRootConfigFromConfigFile(configPath string) (*RootConfig, error) {
 			uploadConfig.IgnorePaths = append(uploadConfig.IgnorePaths, ignoreLines...)
 		}
 
+		uploadConfig.Name = name
 		uploadConfig.UploadRootPath = strings.TrimSuffix(uploadConfig.UploadRootPath, "/")
+
 		rootConfig.Configs[name] = uploadConfig
 	}
 
@@ -92,24 +93,4 @@ func readIgnoreFile(ignoreFilePath string) ([]string, error) {
 	}
 
 	return ignoreLines, nil
-}
-
-func NewAuthConfigFromEnv() *AppAuthConfig {
-	viper.SetEnvPrefix("FTP_UPLOADER")
-	viper.BindEnv("USERNAME")
-	viper.BindEnv("PASSWORD")
-	viper.BindEnv("HOST")
-	return &AppAuthConfig{
-		Username: viper.GetString("USERNAME"),
-		Password: viper.GetString("PASSWORD"),
-		Host:     viper.GetString("HOST"),
-	}
-}
-
-func NewAuthConfigFromParams() AppAuthConfig {
-	return AppAuthConfig{}
-}
-
-func NewUploadConfig() UploadConfig {
-	return UploadConfig{}
 }

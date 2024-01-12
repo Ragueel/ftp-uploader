@@ -17,7 +17,7 @@ type FtpUploader struct {
 	PreCreatedDirectories map[string]bool
 }
 
-func NewFtpUploader(ctx context.Context, authConfig config.AppAuthConfig) (*FtpUploader, error) {
+func NewFtpUploader(ctx context.Context, authConfig config.AuthCredentials) (*FtpUploader, error) {
 	ftpClient, err := ftp.Dial(authConfig.Host, ftp.DialWithContext(ctx))
 	if err != nil {
 		return nil, fmt.Errorf("failed to dial to remote host: %w", err)

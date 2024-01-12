@@ -15,7 +15,7 @@ type UploadController struct {
 	Uploader uploader.Uploader
 }
 
-func NewFtpUploadController(ctx context.Context, authConfig config.AppAuthConfig) (*UploadController, error) {
+func NewFtpUploadController(ctx context.Context, authConfig config.AuthCredentials) (*UploadController, error) {
 	ftpUploader, err := uploader.NewFtpUploader(ctx, authConfig)
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func NewFtpUploadController(ctx context.Context, authConfig config.AppAuthConfig
 }
 
 func (uploadController *UploadController) uploadFile(filePath, outputPath string) (interface{}, error) {
-	fmt.Printf("Uploading file: %s", filePath)
+	fmt.Printf("Uploading file: %s\n", filePath)
 	result := uploadController.Uploader.UploadFile(filePath, outputPath)
 
 	for progress := range result.Progress {
@@ -39,7 +39,7 @@ func (uploadController *UploadController) uploadFile(filePath, outputPath string
 	return filePath, nil
 }
 
-func (uploadController *UploadController) UploadFromConfig(ctx context.Context, conf config.UploadConfig) {
+func (uploadController *UploadController) UploadFromConfig(ctx context.Context, conf config.UploadSettings) {
 	filesChan := traverser.GetAllFilesInDirectory(traverser.TraversalRequest{
 		TraversalDirectory: conf.LocalRootPath, ExcludedPaths: conf.IgnorePaths,
 	})

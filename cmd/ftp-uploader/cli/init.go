@@ -17,7 +17,7 @@ var InitCommand = &cobra.Command{
 }
 
 func runInit(_ *cobra.Command, _ []string) {
-	rootConfig := config.NewEmptyRootConfig()
+	rootConfig := config.NewEmptyRoot()
 
 	result, err := yaml.Marshal(&rootConfig)
 	if err != nil {

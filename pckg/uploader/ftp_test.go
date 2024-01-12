@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var authConfig = config.AppAuthConfig{
+var authConfig = config.AuthCredentials{
 	Username: "user",
 	Password: "password",
 	Host:     "localhost:20021",
