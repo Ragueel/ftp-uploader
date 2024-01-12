@@ -23,6 +23,7 @@ jobs:
           USERS: "user|password"
         ports: 
           - 20021:21
+          - 21000-21010:21000-21010
     steps:
     - uses: actions/checkout@v3
 
