@@ -1,4 +1,4 @@
-FROM golang:1.21.1-alpine
+FROM golang:1.21.1-alpine as builder
 
 # Set destination for COPY
 WORKDIR /app
@@ -10,8 +10,12 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o /var/bin/ftp-uploader ./cmd/ftp-uploader/main.go
-RUN chmod +x /var/bin/ftp-uploader
-ENV PATH "$PATH:/var/bin"
+RUN go build -o /bin/ftp-uploader ./cmd/ftp-uploader/main.go
+RUN chmod +x /bin/ftp-uploader
+
+FROM alpine:latest as production
+
+COPY --from=builder /bin/ftp-uploader /bin/ftp-uploader
+RUN chmod +x /bin/ftp-uploader
 
 CMD ["ftp-uploader"]
