@@ -49,14 +49,17 @@ jobs:
           go-version: '1.21'
 
       - name: Build
-        run: go build -ldflags "-s -w" -o ./builds/ftp-uploader ./cmd/ftp-uploader/main.go
+        run: |
+          env GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o ./builds/ftp-uploader-linux-amd64 ./cmd/ftp-uploader/main.go
+          env GOOS=linux GOARCH=arm go build -ldflags "-s -w" -o ./builds/ftp-uploader-linux-arm ./cmd/ftp-uploader/main.go
+          env GOOS=linux GOARCH=386 go build -ldflags "-s -w" -o ./builds/ftp-uploader-linux-386 ./cmd/ftp-uploader/main.go
 
       - name: Store artifacts
         uses: actions/upload-artifact@v3
         with:
           name: binaries
-          path: ./builds/ftp-uploader
-          retention-days: 5
+          path: ./builds/
+          retention-days: 2
 
   build_docker:
     needs: test
