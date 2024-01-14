@@ -18,15 +18,18 @@ $$ |        \$$$$  |$$$$$$$  |        \$$$$$$  |$$$$$$$  |$$ |\$$$$$$  |\$$$$$$$
 \__|         \____/ $$  ____/          \______/ $$  ____/ \__| \______/  \_______| \_______| \_______|\__|      
                     $$ |                        $$ |                                                            
                     $$ |                        $$ |                                                            
-                    \__|                        \__|`
+                    \__|                        \__|
+
+Use 'ftp-uploader init' to initialize project. Use 'ftp-uploader upload' command to upload to ftp. 
+
+Read more at: https://github.com/Ragueel/ftp-uploader `
 
 var rootCmd = &cobra.Command{
 	Use:   "ftp-uploader",
-	Short: "ftp-uploader - a utility to upload files to your ftp server with ignores",
-	Long:  "ftp-uploader allows you to upload your files to your ftp server with gitignore like rules",
+	Short: "ftp-uploader allows you to upload your files to your ftp server with gitignore like logic",
+	Long:  "ftp-uploader allows you to upload your files to your ftp server with gitignore like logic",
 	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Println(welcomeMessage)
-		fmt.Println("\n\nUse `ftp-uploader init` to initialize project. Use `ftp-uploader upload` command to upload to ftp.")
 	},
 }
 
@@ -36,6 +39,9 @@ func init() {
 }
 
 func main() {
+	rootCmd.CompletionOptions.HiddenDefaultCmd = true
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
+
 	err := rootCmd.Execute()
 	if err != nil {
 		panic(err)
