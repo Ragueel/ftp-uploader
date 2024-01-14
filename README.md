@@ -38,7 +38,7 @@ It should generate your `ftp-uploader.yaml` with the following content:
 ```yaml
 configs:
   default:
-    root: . # local root directory where upload happens
+    root: . # local root directory, in which files you want to upload lie
     uploadRoot: my-relative-path/ # directory where files will be uploaded
     ignorePaths:
       - ftp-uploader.yaml
