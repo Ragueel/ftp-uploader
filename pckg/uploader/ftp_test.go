@@ -22,7 +22,7 @@ func Test_ProperlyInitializesConnection(t *testing.T) {
 	timeoutCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	ftpUploader, err := NewFtpUploader(timeoutCtx, authConfig)
+	ftpUploader, err := NewFtpUploader(timeoutCtx, authConfig, 1)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, ftpUploader)
@@ -32,7 +32,11 @@ func Test_ProperlyInitializesConnection(t *testing.T) {
 }
 
 func Test_UploadFileAtPathWorks(t *testing.T) {
-	ftpUploader, _ := NewFtpUploader(context.TODO(), authConfig)
+	todoCtx := context.TODO()
+	timeoutCtx, cancel := context.WithTimeout(todoCtx, 2*time.Second)
+	defer cancel()
+
+	ftpUploader, _ := NewFtpUploader(todoCtx, authConfig, 1)
 	f, err := os.CreateTemp("", "sample.txt")
 	f.Write([]byte("Hello world"))
 
@@ -40,7 +44,7 @@ func Test_UploadFileAtPathWorks(t *testing.T) {
 
 	defer os.Remove(f.Name())
 
-	task := ftpUploader.UploadFile(f.Name(), "test.txt")
+	task := ftpUploader.UploadFile(timeoutCtx, f.Name(), "test.txt")
 
 	assert.NotNil(t, task)
 
@@ -50,7 +54,10 @@ func Test_UploadFileAtPathWorks(t *testing.T) {
 
 	assert.NoError(t, task.Err)
 
-	file, err := ftpUploader.Conn.Retr("test.txt")
+	conn, err := ftpUploader.getConn(timeoutCtx)
+	assert.NoError(t, err)
+
+	file, err := conn.Retr("test.txt")
 	assert.NoError(t, err)
 
 	buf, err := io.ReadAll(file)
@@ -60,7 +67,11 @@ func Test_UploadFileAtPathWorks(t *testing.T) {
 }
 
 func Test_UploadInSubdirectoryWorks(t *testing.T) {
-	ftpUploader, _ := NewFtpUploader(context.TODO(), authConfig)
+	todoCtx := context.TODO()
+	timeoutCtx, cancel := context.WithTimeout(todoCtx, 2*time.Second)
+	defer cancel()
+
+	ftpUploader, _ := NewFtpUploader(context.TODO(), authConfig, 1)
 	uploadPath := "subdir_sample/test_1/asdasd/test.txt"
 
 	f, err := os.CreateTemp("", "sample.txt")
@@ -70,7 +81,7 @@ func Test_UploadInSubdirectoryWorks(t *testing.T) {
 
 	defer os.Remove(f.Name())
 
-	task := ftpUploader.UploadFile(f.Name(), uploadPath)
+	task := ftpUploader.UploadFile(timeoutCtx, f.Name(), uploadPath)
 
 	assert.NotNil(t, task)
 
@@ -79,8 +90,10 @@ func Test_UploadInSubdirectoryWorks(t *testing.T) {
 	}
 
 	assert.NoError(t, task.Err)
+	conn, err := ftpUploader.getConn(timeoutCtx)
+	assert.NoError(t, err)
 
-	file, err := ftpUploader.Conn.Retr(uploadPath)
+	file, err := conn.Retr(uploadPath)
 	assert.NoError(t, err)
 
 	buf, err := io.ReadAll(file)

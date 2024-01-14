@@ -15,7 +15,7 @@ type MockUploader struct {
 	uploadFilePaths []string
 }
 
-func (u *MockUploader) UploadFile(filePath string, uploadFilePath string) *uploader.UploadTask {
+func (u *MockUploader) UploadFile(ctx context.Context, filePath string, uploadFilePath string) *uploader.UploadTask {
 	progressChan := make(chan int)
 
 	u.filePaths = append(u.filePaths, filePath)
@@ -50,7 +50,7 @@ func Test_ControllerProperlyUploadsEverything(t *testing.T) {
 		filePaths:       []string{},
 		uploadFilePaths: []string{},
 	}
-	uploadController := UploadController{Uploader: &mockUploader}
+	uploadController := UploadController{Uploader: &mockUploader, maxWorkerCount: 2}
 
 	ctx := context.TODO()
 	testingCtx, cancel := context.WithTimeout(ctx, 2*time.Second)

@@ -42,7 +42,7 @@ func Test_LoadFromFileWorks(t *testing.T) {
 	_, err = file.Write([]byte(uploaderFixture))
 	assert.NoError(t, err)
 
-	resultFromFile, err := NewRootFromFile(file.Name(), AuthCredentials{})
+	resultFromFile, err := NewRootFromFile(file.Name(), AuthCredentials{}, 1)
 	assert.NoError(t, err)
 
 	settings, ok := resultFromFile.Configs["default"]
@@ -66,7 +66,7 @@ func Test_LoadingFixtureWithGitignoreFile(t *testing.T) {
 	_, err = file.Write([]byte(resultFile))
 	assert.NoError(t, err)
 
-	resultFromFile, err := NewRootFromFile(file.Name(), AuthCredentials{})
+	resultFromFile, err := NewRootFromFile(file.Name(), AuthCredentials{}, 1)
 	assert.NoError(t, err)
 
 	settings, ok := resultFromFile.Configs["default"]
@@ -74,4 +74,12 @@ func Test_LoadingFixtureWithGitignoreFile(t *testing.T) {
 	assert.Equal(t, 5, len(settings.IgnorePaths))
 	assert.Equal(t, ".sample", settings.IgnorePaths[3])
 	assert.Equal(t, "*.txt", settings.IgnorePaths[4])
+}
+
+func Test_CreateConfigAtPathWorks(t *testing.T) {
+	file, err := os.CreateTemp("", "ftp-uploader.yaml")
+	assert.NoError(t, err)
+
+	err = CreateDefaultRootFile(file.Name())
+	assert.NoError(t, err)
 }

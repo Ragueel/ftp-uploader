@@ -18,6 +18,7 @@ type AuthCredentials struct {
 }
 
 type UploadSettings struct {
+	ConnectionCount int              `yaml:"connectionCount,omitempty"`
 	AuthCredentials *AuthCredentials `yaml:"authConfig,omitempty"`
 	LocalRootPath   string           `yaml:"root"`
 	UploadRootPath  string           `yaml:"uploadRoot"`
@@ -42,7 +43,7 @@ func NewEmptyRoot() Root {
 	return Root{Configs: map[string]UploadSettings{"default": NewEmptyUploadSettings()}}
 }
 
-func NewRootFromFile(configPath string, fallbackAuth AuthCredentials) (*Root, error) {
+func NewRootFromFile(configPath string, fallbackAuth AuthCredentials, fallbackConnectionCount int) (*Root, error) {
 	file, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not read file: %s %w", configPath, err)
@@ -63,6 +64,9 @@ func NewRootFromFile(configPath string, fallbackAuth AuthCredentials) (*Root, er
 				return nil, fmt.Errorf("failed to read ignore file of %s: %w", name, err)
 			}
 			uploadConfig.IgnorePaths = append(uploadConfig.IgnorePaths, ignoreLines...)
+		}
+		if uploadConfig.ConnectionCount < 1 {
+			uploadConfig.ConnectionCount = fallbackConnectionCount
 		}
 
 		uploadConfig.Name = name
@@ -96,4 +100,31 @@ func readIgnoreFile(ignoreFilePath string) ([]string, error) {
 	}
 
 	return ignoreLines, nil
+}
+
+func CreateDefaultRootFile(configPath string) error {
+	rootConfig := NewEmptyRoot()
+
+	result, err := yaml.Marshal(&rootConfig)
+	if err != nil {
+		return fmt.Errorf("could not parse config: %w", err)
+	}
+
+	file, err := os.Create(configPath)
+	if err != nil {
+		return fmt.Errorf("could not create file: %w", err)
+	}
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			fmt.Println("Could not close file")
+		}
+	}()
+
+	_, err = file.Write([]byte(string(result)))
+	if err != nil {
+		return fmt.Errorf("could not write to file: %w", err)
+	}
+
+	return nil
 }

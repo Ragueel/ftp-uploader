@@ -13,11 +13,32 @@ import (
 )
 
 type FtpUploader struct {
-	Conn                  *ftp.ServerConn
 	PreCreatedDirectories map[string]bool
+	authConfig            config.AuthCredentials
+	connQueue             chan *ftp.ServerConn
+	allConnections        []*ftp.ServerConn
 }
 
-func NewFtpUploader(ctx context.Context, authConfig config.AuthCredentials) (*FtpUploader, error) {
+func NewFtpUploader(ctx context.Context, authConfig config.AuthCredentials, connectionCount int) (*FtpUploader, error) {
+	uploader := FtpUploader{
+		allConnections:        make([]*ftp.ServerConn, 0),
+		connQueue:             make(chan *ftp.ServerConn, connectionCount),
+		PreCreatedDirectories: make(map[string]bool),
+	}
+
+	for i := 0; i < connectionCount; i++ {
+		connection, err := createConnection(ctx, authConfig)
+		if err != nil {
+			return nil, err
+		}
+		uploader.allConnections = append(uploader.allConnections, connection)
+		uploader.connQueue <- connection
+	}
+
+	return &uploader, nil
+}
+
+func createConnection(ctx context.Context, authConfig config.AuthCredentials) (*ftp.ServerConn, error) {
 	ftpClient, err := ftp.Dial(authConfig.Host, ftp.DialWithContext(ctx))
 	if err != nil {
 		return nil, fmt.Errorf("failed to dial to remote host: %w", err)
@@ -26,15 +47,43 @@ func NewFtpUploader(ctx context.Context, authConfig config.AuthCredentials) (*Ft
 	if err != nil {
 		return nil, fmt.Errorf("failed to login: %w", err)
 	}
-	// TODO: Add connection pooling
-	return &FtpUploader{Conn: ftpClient, PreCreatedDirectories: make(map[string]bool)}, nil
+
+	return ftpClient, nil
+}
+
+func (uploader *FtpUploader) getConn(ctx context.Context) (*ftp.ServerConn, error) {
+	select {
+	case conn, ok := <-uploader.connQueue:
+		if !ok {
+			return nil, fmt.Errorf("connection pool closed")
+		}
+		return conn, nil
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+}
+
+func (uploader *FtpUploader) putConn(ctx context.Context, conn *ftp.ServerConn) {
+	select {
+	case uploader.connQueue <- conn:
+		return
+	case <-ctx.Done():
+		panic(fmt.Errorf("failed to write into connection queue: %w", ctx.Err()))
+	}
 }
 
 func (uploader *FtpUploader) Close() error {
-	return uploader.Conn.Quit()
+	close(uploader.connQueue)
+	for _, conn := range uploader.allConnections {
+		err := conn.Quit()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func (uploader *FtpUploader) createDirectoryIfNotExists(uploadPath string) error {
+func (uploader *FtpUploader) createDirectoryIfNotExists(conn *ftp.ServerConn, uploadPath string) error {
 	uploadFilePathDir := filepath.Dir(uploadPath)
 
 	if uploadFilePathDir == "." {
@@ -49,20 +98,20 @@ func (uploader *FtpUploader) createDirectoryIfNotExists(uploadPath string) error
 			continue
 		}
 
-		err := uploader.Conn.MakeDir(remoteDir)
+		err := conn.MakeDir(remoteDir)
 		if err != nil {
-			currentDir, err := uploader.Conn.CurrentDir()
+			currentDir, err := conn.CurrentDir()
 			if err != nil {
 				return fmt.Errorf("could not get current directory: %w", err)
 			}
 
-			err = uploader.Conn.ChangeDir(remoteDir)
+			err = conn.ChangeDir(remoteDir)
 
 			if err != nil {
 				return fmt.Errorf("failed to create ftp directory: %w", err)
 			}
 
-			err = uploader.Conn.ChangeDir(currentDir)
+			err = conn.ChangeDir(currentDir)
 			if err != nil {
 				return fmt.Errorf("failed to reset directory: %w", err)
 			}
@@ -75,7 +124,7 @@ func (uploader *FtpUploader) createDirectoryIfNotExists(uploadPath string) error
 }
 
 // TODO: Add proper context cancelation
-func (uploader *FtpUploader) UploadFile(filePath string, uploadFilePath string) *UploadTask {
+func (uploader *FtpUploader) UploadFile(ctx context.Context, filePath string, uploadFilePath string) *UploadTask {
 	progressChan := make(chan int)
 
 	task := UploadTask{
@@ -85,7 +134,15 @@ func (uploader *FtpUploader) UploadFile(filePath string, uploadFilePath string) 
 
 	go func() {
 		defer close(progressChan)
-		err := uploader.createDirectoryIfNotExists(uploadFilePath)
+		ftpConn, err := uploader.getConn(ctx)
+		if err != nil {
+			task.Err = fmt.Errorf("failed to get connection: %w", err)
+			return
+		}
+
+		defer uploader.putConn(ctx, ftpConn)
+
+		err = uploader.createDirectoryIfNotExists(ftpConn, uploadFilePath)
 		if err != nil {
 			task.Err = err
 			return
@@ -100,7 +157,7 @@ func (uploader *FtpUploader) UploadFile(filePath string, uploadFilePath string) 
 
 		progressChan <- 0
 
-		err = uploader.Conn.Stor(uploadFilePath, reader)
+		err = ftpConn.Stor(uploadFilePath, reader)
 		if err != nil {
 			task.Err = fmt.Errorf("failed to execute stor on file: %s %w", uploadFilePath, err)
 			return

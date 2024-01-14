@@ -1,7 +1,9 @@
 package uploader
 
+import "golang.org/x/net/context"
+
 type Uploader interface {
-	UploadFile(filePath string, uploadFilePath string) *UploadTask
+	UploadFile(ctx context.Context, filePath string, uploadFilePath string) *UploadTask
 }
 
 type UploadTask struct {

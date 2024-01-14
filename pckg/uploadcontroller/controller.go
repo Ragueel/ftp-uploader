@@ -12,22 +12,27 @@ import (
 )
 
 type UploadController struct {
-	Uploader uploader.Uploader
+	maxWorkerCount int
+	Uploader       uploader.Uploader
 }
 
-func NewFtpUploadController(ctx context.Context, authConfig config.AuthCredentials) (*UploadController, error) {
-	ftpUploader, err := uploader.NewFtpUploader(ctx, authConfig)
+func NewFtpUploadController(ctx context.Context, authConfig config.AuthCredentials, connectionCount int) (*UploadController, error) {
+	ftpUploader, err := uploader.NewFtpUploader(ctx, authConfig, connectionCount)
 	if err != nil {
 		return nil, err
 	}
+	if connectionCount < 1 {
+		return nil, fmt.Errorf("invalid number of connections should be more than 0, was given: %d", connectionCount)
+	}
 
-	uploadController := &UploadController{Uploader: ftpUploader}
+	uploadController := &UploadController{Uploader: ftpUploader, maxWorkerCount: connectionCount}
 	return uploadController, nil
 }
 
-func (uploadController *UploadController) uploadFile(filePath, outputPath string) (interface{}, error) {
+// TODO: add retries
+func (uploadController *UploadController) uploadFile(ctx context.Context, filePath, outputPath string) (interface{}, error) {
 	fmt.Printf("Uploading file: %s\n", filePath)
-	result := uploadController.Uploader.UploadFile(filePath, outputPath)
+	result := uploadController.Uploader.UploadFile(ctx, filePath, outputPath)
 
 	for progress := range result.Progress {
 		fmt.Printf("Progress: %d\n", progress)
@@ -40,11 +45,16 @@ func (uploadController *UploadController) uploadFile(filePath, outputPath string
 }
 
 func (uploadController *UploadController) UploadFromConfig(ctx context.Context, conf config.UploadSettings) {
+	if uploadController.maxWorkerCount < 1 {
+		fmt.Println("Invalid number of workers")
+		return
+	}
+
 	filesChan := traverser.GetAllFilesInDirectory(traverser.TraversalRequest{
 		TraversalDirectory: conf.LocalRootPath, ExcludedPaths: conf.IgnorePaths,
 	})
 
-	uploadWorker := worker.NewPool(1)
+	uploadWorker := worker.NewPool(uploadController.maxWorkerCount)
 
 	uploadJobsChan := make(chan worker.Job, uploadWorker.WorkersCount)
 	var wg sync.WaitGroup
@@ -62,7 +72,7 @@ func (uploadController *UploadController) UploadFromConfig(ctx context.Context, 
 						trimmedFilePath := strings.TrimPrefix(path, conf.LocalRootPath)
 						uploadDestination := fmt.Sprintf("%s/%s", conf.UploadRootPath, trimmedFilePath)
 
-						return uploadController.uploadFile(path, uploadDestination)
+						return uploadController.uploadFile(ctx, path, uploadDestination)
 					}
 				}(filePath),
 			}

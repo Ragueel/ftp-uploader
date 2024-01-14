@@ -3,10 +3,7 @@ package cli
 import (
 	"fmt"
 	"ftp-uploader/pckg/config"
-	"os"
-
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 )
 
 var InitCommand = &cobra.Command{
@@ -17,31 +14,10 @@ var InitCommand = &cobra.Command{
 }
 
 func runInit(_ *cobra.Command, _ []string) {
-	rootConfig := config.NewEmptyRoot()
-
-	result, err := yaml.Marshal(&rootConfig)
+	err := config.CreateDefaultRootFile(config.DefaultFileName)
 	if err != nil {
-		fmt.Printf("Failed to initialize empty config project %\n", err)
-		return
+		fmt.Printf("Failed initializing file: %s\n", err)
+	} else {
+		fmt.Printf("Initialized default config at: %s\n", config.DefaultFileName)
 	}
-
-	file, err := os.Create(config.DefaultFileName)
-	if err != nil {
-		fmt.Printf("Failed to create file %s\n", err)
-		return
-	}
-
-	defer func() {
-		if err := file.Close(); err != nil {
-			fmt.Println("Could not close file")
-		}
-	}()
-
-	_, err = file.Write([]byte(string(result)))
-	if err != nil {
-		fmt.Printf("Could not write into file: %s\n", err)
-		return
-	}
-
-	fmt.Println("Initialized default `ftp-uploader.yaml` file")
 }
