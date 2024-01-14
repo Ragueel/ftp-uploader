@@ -8,6 +8,9 @@ on:
     branches:
       - main
       - release/*
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   test:
@@ -58,6 +61,9 @@ jobs:
   build_docker:
     needs: test
     runs-on: ubuntu-20.04
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v3
 
