@@ -23,7 +23,7 @@ Install the latest build
 ### Linux
 
 ```shell
-sudo curl -fsSL -o /usr/local/bin/ftp-uploader https://github.com/Ragueel/ftp-uploader/releases/latest/download/ftp-uploader-amd64
+sudo curl -fsSL -o /usr/local/bin/ftp-uploader https://github.com/Ragueel/ftp-uploader/releases/latest/download/ftp-uploader-linux-amd64
 sudo chmod +x /usr/local/bin/ftp-uploader
 ```
 
