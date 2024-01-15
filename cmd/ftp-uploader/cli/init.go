@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"ftp-uploader/pckg/config"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 var InitCommand = &cobra.Command{
@@ -17,6 +18,7 @@ func runInit(_ *cobra.Command, _ []string) {
 	err := config.CreateDefaultRootFile(config.DefaultFileName)
 	if err != nil {
 		fmt.Printf("Failed initializing file: %s\n", err)
+		os.Exit(1)
 	} else {
 		fmt.Printf("Initialized default config at: %s\n", config.DefaultFileName)
 	}
