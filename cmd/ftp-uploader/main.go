@@ -20,7 +20,7 @@ $$ |        \$$$$  |$$$$$$$  |        \$$$$$$  |$$$$$$$  |$$ |\$$$$$$  |\$$$$$$$
                     $$ |                        $$ |                                                            
                     \__|                        \__|
 
-Use 'ftp-uploader init' to initialize project. Use 'ftp-uploader upload' command to upload to ftp. 
+Use 'ftp-uploader init' to initialize project. Use 'ftp-uploader upload' command to upload to your ftp server with the config. 
 
 Read more at: https://github.com/Ragueel/ftp-uploader `
 

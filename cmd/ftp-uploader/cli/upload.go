@@ -2,9 +2,11 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"ftp-uploader/pckg/config"
 	"ftp-uploader/pckg/uploadcontroller"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -23,6 +25,7 @@ var UploadCommand = &cobra.Command{
 	Use:     "upload",
 	Aliases: []string{"u"},
 	Short:   "Upload your config",
+	Long:    "It is possible to control upload with environement variables. Each variable has a prefix FTP_UPLOADER",
 	Args:    cobra.RangeArgs(0, 1),
 	Run:     runUpload,
 }
@@ -57,10 +60,16 @@ func runUpload(_ *cobra.Command, args []string) {
 		configName = args[0]
 	}
 
-	startUploading(uploadCtx, configName)
+	err := startUploading(uploadCtx, configName)
+	if err != nil {
+		fmt.Printf("Upload failed: %s\n", err)
+		os.Exit(1)
+	} else {
+		fmt.Println("Done")
+	}
 }
 
-func startUploading(uploadCtx context.Context, uploadingConfig string) {
+func startUploading(uploadCtx context.Context, uploadingConfig string) error {
 	fallbackAuthConfig := config.AuthCredentials{
 		Username: username,
 		Password: password,
@@ -68,37 +77,38 @@ func startUploading(uploadCtx context.Context, uploadingConfig string) {
 	}
 	rootConfig, err := config.NewRootFromFile(rootConfigPath, fallbackAuthConfig, connectionCount)
 	if err != nil {
-		fmt.Printf("Invalid root config: %s\n", err)
-		return
+		return fmt.Errorf("invalid root config: %w", err)
 	}
 
 	if uploadingConfig == "" {
-		uploadEveryConfig(uploadCtx, rootConfig)
-		return
+		return uploadEveryConfig(uploadCtx, rootConfig)
 	}
 
 	uploadConfig, ok := rootConfig.Configs[uploadingConfig]
 	if !ok {
-		fmt.Printf("Given config is not found: %s\n", uploadingConfig)
-		return
+		return errors.New("not found config")
 	}
 
-	uploadWithConfig(uploadCtx, uploadConfig)
+	return uploadWithConfig(uploadCtx, uploadConfig)
 }
 
-func uploadEveryConfig(ctx context.Context, rootConfig *config.Root) {
+func uploadEveryConfig(ctx context.Context, rootConfig *config.Root) error {
 	for key, val := range rootConfig.Configs {
 		fmt.Printf("Uploading: %s\n", key)
-		uploadWithConfig(ctx, val)
+		err := uploadWithConfig(ctx, val)
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
-func uploadWithConfig(uploadCtx context.Context, uploadConfig config.UploadSettings) {
+func uploadWithConfig(uploadCtx context.Context, uploadConfig config.UploadSettings) error {
 	uploadController, err := uploadcontroller.NewFtpUploadController(uploadCtx, *uploadConfig.AuthCredentials, uploadConfig.ConnectionCount)
 	if err != nil {
-		fmt.Printf("Failed to created uploader: %s\n", err)
-		return
+		return fmt.Errorf("failed to create uploader: %w", err)
 	}
 
-	uploadController.UploadFromConfig(uploadCtx, uploadConfig)
+	return uploadController.UploadFromConfig(uploadCtx, uploadConfig)
 }

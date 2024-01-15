@@ -4,10 +4,11 @@ import (
 	"context"
 	"ftp-uploader/pckg/config"
 	"ftp-uploader/pckg/uploader"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type MockUploader struct {
@@ -56,12 +57,14 @@ func Test_ControllerProperlyUploadsEverything(t *testing.T) {
 	testingCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 
-	uploadController.UploadFromConfig(testingCtx, config.UploadSettings{
+	err = uploadController.UploadFromConfig(testingCtx, config.UploadSettings{
 		AuthCredentials: &config.AuthCredentials{},
 		LocalRootPath:   testingDir,
 		UploadRootPath:  "sample/",
 		IgnorePaths:     []string{},
 	})
+
+	assert.NoError(t, err)
 
 	assert.Equal(t, 2, len(mockUploader.filePaths))
 	assert.Equal(t, 2, len(mockUploader.uploadFilePaths))

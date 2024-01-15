@@ -2,6 +2,7 @@ package uploadcontroller
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"ftp-uploader/pckg/config"
 	"ftp-uploader/pckg/traverser"
@@ -26,6 +27,7 @@ func NewFtpUploadController(ctx context.Context, authConfig config.AuthCredentia
 	}
 
 	uploadController := &UploadController{Uploader: ftpUploader, maxWorkerCount: connectionCount}
+
 	return uploadController, nil
 }
 
@@ -44,10 +46,9 @@ func (uploadController *UploadController) uploadFile(ctx context.Context, filePa
 	return filePath, nil
 }
 
-func (uploadController *UploadController) UploadFromConfig(ctx context.Context, conf config.UploadSettings) {
+func (uploadController *UploadController) UploadFromConfig(ctx context.Context, conf config.UploadSettings) error {
 	if uploadController.maxWorkerCount < 1 {
-		fmt.Println("Invalid number of workers")
-		return
+		return errors.New("invalid number of workers")
 	}
 
 	filesChan := traverser.GetAllFilesInDirectory(traverser.TraversalRequest{
@@ -57,9 +58,10 @@ func (uploadController *UploadController) UploadFromConfig(ctx context.Context, 
 	uploadWorker := worker.NewPool(uploadController.maxWorkerCount)
 
 	uploadJobsChan := make(chan worker.Job, uploadWorker.WorkersCount)
-	var wg sync.WaitGroup
-	wg.Add(1)
 
+	var wg sync.WaitGroup
+
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		defer close(uploadJobsChan)
@@ -104,4 +106,6 @@ func (uploadController *UploadController) UploadFromConfig(ctx context.Context, 
 	wg.Wait()
 
 	fmt.Println("Completed upload of config")
+
+	return nil
 }
