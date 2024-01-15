@@ -1,22 +1,14 @@
 # ftp-uploader
 
-It is a tool to upload files to your ftp server with `gitignore` like logic.
+Tired of the manual grind when it comes to uploading projects to shared hosting with FTP access? Enter **ftp-uploader**, a robust command-line tool engineered to simplify your workflow and automate the process of deploying projects to your FTP server.
 
-I have a lot of projects that use shared hosting with ftp access. 
-I wanted to automate the process of uploading them to my ftp server, with ability to ignore certain paths and certain files. 
-So, I wrote this cli tool to solve my problems. 
+## Key Features:
 
-This tool also makes transparent on what would be uploaded, and I believe would make CI/CD less cumbersome. 
+- **Seamless Automation:** Bid farewell to manual uploads. Effortlessly deploy your projects with a single command. 
+- **Selective Uploads:** Tailor your uploads by leveraging Gitignore logic. Easily ignore specific paths and files, putting you in control of your project uploads.
+- **Time-Efficient:** Save precious time on repetitive FTP uploads, allowing you to concentrate on refining your projects.
 
-Currently, I created binaries for linux and a docker image that can be used in your CI/CD pipelines.
-
-## Install with docker
-
-```
-docker pull ghcr.io/ragueel/ftp-uploader:main
-```
-
-## Getting started
+## Installation
 
 Install the latest build
 
@@ -27,7 +19,15 @@ sudo curl -fsSL -o /usr/local/bin/ftp-uploader https://github.com/Ragueel/ftp-up
 sudo chmod +x /usr/local/bin/ftp-uploader
 ```
 
-Then init project with:
+### Docker
+
+```
+docker pull ghcr.io/ragueel/ftp-uploader:main
+```
+
+## Creating config
+
+Init project with:
 
 ```shell
 ftp-uploader init
@@ -43,6 +43,8 @@ configs:
     ignorePaths:
       - ftp-uploader.yaml
 ```
+
+*note: You can have as many configs as you want!*
 
 `ignorePaths` follows the same structure as ignore lines of any normal `.gitignore` file
 
@@ -62,7 +64,7 @@ FTP_UPLOADER_CONNECTION_COUNT # controls how many parallel connections are creat
 ROOT_CONFIG_PATH # path to your ftp-upload.yaml file
 ```
 
-## Usage
+## Uploading to ftp server
 
 If you set up everything properly, you can start your upload via the following command:
 
@@ -95,3 +97,6 @@ Get more info with
 ```shell
 ftp-uploader -h
 ```
+
+## Note:
+This tool was created to simplify the FTP uploading process for projects hosted on shared servers. Your feedback and contributions will make it even better!
