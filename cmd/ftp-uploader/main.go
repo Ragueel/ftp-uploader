@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"ftp-uploader/cmd/ftp-uploader/cli"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -44,6 +45,7 @@ func main() {
 
 	err := rootCmd.Execute()
 	if err != nil {
-		panic(err)
+		fmt.Printf("Failed %s\n", err)
+		os.Exit(1)
 	}
 }
