@@ -96,35 +96,42 @@ func (uploader *FtpUploader) createDirectoryIfNotExists(conn *ftp.ServerConn, up
 	directories := strings.Split(uploadFilePathDir, "/")
 
 	for i := range directories {
-		uploader.directoriesMutex.Lock()
-		defer uploader.directoriesMutex.Unlock()
+		createDirFunc := func() error {
+			uploader.directoriesMutex.Lock()
+			defer uploader.directoriesMutex.Unlock()
 
-		remoteDir := filepath.Join(directories[:i+1]...)
-		if uploader.PreCreatedDirectories[remoteDir] {
-			continue
+			remoteDir := filepath.Join(directories[:i+1]...)
+			if uploader.PreCreatedDirectories[remoteDir] {
+				return nil
+			}
+
+			err := conn.MakeDir(remoteDir)
+			if err != nil {
+				currentDir, err := conn.CurrentDir()
+				if err != nil {
+					return fmt.Errorf("could not get current directory: %w", err)
+				}
+
+				err = conn.ChangeDir(remoteDir)
+
+				if err != nil {
+					return fmt.Errorf("failed to create ftp directory: %w", err)
+				}
+
+				err = conn.ChangeDir(currentDir)
+				if err != nil {
+					return fmt.Errorf("failed to reset directory: %w", err)
+				}
+
+				uploader.PreCreatedDirectories[remoteDir] = true
+
+			}
+			return nil
 		}
-
-		err := conn.MakeDir(remoteDir)
+		err := createDirFunc()
 		if err != nil {
-			currentDir, err := conn.CurrentDir()
-			if err != nil {
-				return fmt.Errorf("could not get current directory: %w", err)
-			}
-
-			err = conn.ChangeDir(remoteDir)
-
-			if err != nil {
-				return fmt.Errorf("failed to create ftp directory: %w", err)
-			}
-
-			err = conn.ChangeDir(currentDir)
-			if err != nil {
-				return fmt.Errorf("failed to reset directory: %w", err)
-			}
+			return err
 		}
-
-		uploader.PreCreatedDirectories[remoteDir] = true
-
 	}
 	return nil
 }
