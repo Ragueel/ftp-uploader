@@ -8,11 +8,13 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/jlaffaye/ftp"
 )
 
 type FtpUploader struct {
+	directoriesMutex      sync.RWMutex
 	PreCreatedDirectories map[string]bool
 	authConfig            config.AuthCredentials
 	connQueue             chan *ftp.ServerConn
@@ -21,6 +23,7 @@ type FtpUploader struct {
 
 func NewFtpUploader(ctx context.Context, authConfig config.AuthCredentials, connectionCount int) (*FtpUploader, error) {
 	uploader := FtpUploader{
+		directoriesMutex:      sync.RWMutex{},
 		allConnections:        make([]*ftp.ServerConn, 0),
 		connQueue:             make(chan *ftp.ServerConn, connectionCount),
 		PreCreatedDirectories: make(map[string]bool),
@@ -93,6 +96,9 @@ func (uploader *FtpUploader) createDirectoryIfNotExists(conn *ftp.ServerConn, up
 	directories := strings.Split(uploadFilePathDir, "/")
 
 	for i := range directories {
+		uploader.directoriesMutex.Lock()
+		defer uploader.directoriesMutex.Unlock()
+
 		remoteDir := filepath.Join(directories[:i+1]...)
 		if uploader.PreCreatedDirectories[remoteDir] {
 			continue

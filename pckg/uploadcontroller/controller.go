@@ -73,6 +73,10 @@ func (uploadController *UploadController) UploadFromConfig(ctx context.Context, 
 					return func(ctx context.Context) (interface{}, error) {
 						trimmedFilePath := strings.TrimPrefix(path, conf.LocalRootPath)
 						uploadDestination := fmt.Sprintf("%s/%s", conf.UploadRootPath, trimmedFilePath)
+						// TODO: add better trim handling in case of name collisions
+						if conf.LocalRootPath == "." {
+							uploadDestination = fmt.Sprintf("%s/%s", conf.UploadRootPath, path)
+						}
 
 						return uploadController.uploadFile(ctx, path, uploadDestination)
 					}
