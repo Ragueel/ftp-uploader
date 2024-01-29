@@ -51,7 +51,7 @@ func Test_ControllerProperlyUploadsEverything(t *testing.T) {
 		filePaths:       []string{},
 		uploadFilePaths: []string{},
 	}
-	uploadController := UploadController{Uploader: &mockUploader, maxWorkerCount: 1}
+	uploadController := Controller{Uploader: &mockUploader, maxWorkerCount: 1}
 
 	ctx := context.TODO()
 	testingCtx, cancel := context.WithTimeout(ctx, 2*time.Second)

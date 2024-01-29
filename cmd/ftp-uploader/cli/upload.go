@@ -105,7 +105,7 @@ func uploadEveryConfig(ctx context.Context, rootConfig *config.Root) error {
 }
 
 func uploadWithConfig(uploadCtx context.Context, uploadConfig config.UploadSettings) error {
-	uploadController, err := uploadcontroller.NewFtpUploadController(uploadCtx, *uploadConfig.AuthCredentials, uploadConfig.ConnectionCount)
+	uploadController, err := uploadcontroller.NewFtpController(uploadCtx, *uploadConfig.AuthCredentials, uploadConfig.ConnectionCount)
 	if err != nil {
 		return fmt.Errorf("failed to create uploader: %w", err)
 	}

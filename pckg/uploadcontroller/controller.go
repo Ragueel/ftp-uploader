@@ -12,12 +12,12 @@ import (
 	"sync"
 )
 
-type UploadController struct {
+type Controller struct {
 	maxWorkerCount int
 	Uploader       uploader.Uploader
 }
 
-func NewFtpUploadController(ctx context.Context, authConfig config.AuthCredentials, connectionCount int) (*UploadController, error) {
+func NewFtpController(ctx context.Context, authConfig config.AuthCredentials, connectionCount int) (*Controller, error) {
 	ftpUploader, err := uploader.NewFtpUploader(ctx, authConfig, connectionCount)
 	if err != nil {
 		return nil, err
@@ -26,13 +26,13 @@ func NewFtpUploadController(ctx context.Context, authConfig config.AuthCredentia
 		return nil, fmt.Errorf("invalid number of connections should be more than 0, was given: %d", connectionCount)
 	}
 
-	uploadController := &UploadController{Uploader: ftpUploader, maxWorkerCount: connectionCount}
+	uploadController := &Controller{Uploader: ftpUploader, maxWorkerCount: connectionCount}
 
 	return uploadController, nil
 }
 
 // TODO: add retries
-func (uploadController *UploadController) uploadFile(ctx context.Context, filePath, outputPath string) (interface{}, error) {
+func (uploadController *Controller) uploadFile(ctx context.Context, filePath, outputPath string) (interface{}, error) {
 	fmt.Printf("Uploading file: %s\n", filePath)
 	result := uploadController.Uploader.UploadFile(ctx, filePath, outputPath)
 
@@ -46,7 +46,7 @@ func (uploadController *UploadController) uploadFile(ctx context.Context, filePa
 	return filePath, nil
 }
 
-func (uploadController *UploadController) UploadFromConfig(ctx context.Context, conf config.UploadSettings) error {
+func (uploadController *Controller) UploadFromConfig(ctx context.Context, conf config.UploadSettings) error {
 	if uploadController.maxWorkerCount < 1 {
 		return errors.New("invalid number of workers")
 	}
