@@ -96,44 +96,51 @@ func (uploader *FtpUploader) createDirectoryIfNotExists(conn *ftp.ServerConn, up
 	directories := strings.Split(uploadFilePathDir, "/")
 
 	for i := range directories {
-		createDirFunc := func() error {
-			uploader.directoriesMutex.Lock()
-			defer uploader.directoriesMutex.Unlock()
 
-			remoteDir := filepath.Join(directories[:i+1]...)
-			if uploader.PreCreatedDirectories[remoteDir] {
-				return nil
-			}
-
-			err := conn.MakeDir(remoteDir)
-			if err != nil {
-				currentDir, err := conn.CurrentDir()
-				if err != nil {
-					return fmt.Errorf("could not get current directory: %w", err)
-				}
-
-				err = conn.ChangeDir(remoteDir)
-
-				if err != nil {
-					return fmt.Errorf("failed to create ftp directory: %w", err)
-				}
-
-				err = conn.ChangeDir(currentDir)
-				if err != nil {
-					return fmt.Errorf("failed to reset directory: %w", err)
-				}
-
-				uploader.PreCreatedDirectories[remoteDir] = true
-
-			}
+		remoteDir := filepath.Join(directories[:i+1]...)
+		if uploader.directoryIsCreated(remoteDir) {
 			return nil
 		}
-		err := createDirFunc()
+
+		err := conn.MakeDir(remoteDir)
 		if err != nil {
-			return err
+			currentDir, err := conn.CurrentDir()
+			if err != nil {
+				return fmt.Errorf("could not get current directory: %w", err)
+			}
+
+			err = conn.ChangeDir(remoteDir)
+
+			if err != nil {
+				return fmt.Errorf("failed to create ftp directory: %w", err)
+			}
+
+			err = conn.ChangeDir(currentDir)
+			if err != nil {
+				return fmt.Errorf("failed to reset directory: %w", err)
+			}
+
+			uploader.PreCreatedDirectories[remoteDir] = true
 		}
+
+		uploader.putInCreatedDirectories(remoteDir)
 	}
+
 	return nil
+}
+
+func (uploader *FtpUploader) directoryIsCreated(directory string) bool {
+	uploader.directoriesMutex.RLock()
+	defer uploader.directoriesMutex.RUnlock()
+
+	return uploader.PreCreatedDirectories[directory]
+}
+
+func (uploader *FtpUploader) putInCreatedDirectories(directory string) {
+	uploader.directoriesMutex.Lock()
+	defer uploader.directoriesMutex.Unlock()
+
+	uploader.PreCreatedDirectories[directory] = true
 }
 
 // TODO: Add proper context cancelation

@@ -2,14 +2,26 @@ package uploader
 
 import (
 	"context"
+	"fmt"
 	"ftp-uploader/pckg/config"
 	"io"
+	"math/rand"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 )
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func RandString(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
 
 var authConfig = config.AuthCredentials{
 	Username: "user",
@@ -40,11 +52,12 @@ func Test_UploadFileAtPathWorks(t *testing.T) {
 	f, err := os.CreateTemp("", "sample.txt")
 	f.Write([]byte("Hello world"))
 
+	uploadPath := fmt.Sprintf("%s.txt", RandString(10))
 	assert.NoError(t, err)
 
 	defer os.Remove(f.Name())
 
-	task := ftpUploader.UploadFile(timeoutCtx, f.Name(), "test.txt")
+	task := ftpUploader.UploadFile(timeoutCtx, f.Name(), uploadPath)
 
 	assert.NotNil(t, task)
 
@@ -57,7 +70,7 @@ func Test_UploadFileAtPathWorks(t *testing.T) {
 	conn, err := ftpUploader.getConn(timeoutCtx)
 	assert.NoError(t, err)
 
-	file, err := conn.Retr("test.txt")
+	file, err := conn.Retr(uploadPath)
 	assert.NoError(t, err)
 
 	buf, err := io.ReadAll(file)
@@ -72,7 +85,7 @@ func Test_UploadInSubdirectoryWorks(t *testing.T) {
 	defer cancel()
 
 	ftpUploader, _ := NewFtpUploader(context.TODO(), authConfig, 1)
-	uploadPath := "subdir_sample/test_1/asdasd/test.txt"
+	uploadPath := fmt.Sprintf("subdir_sample/test_1/asdasd/%s.txt", RandString(12))
 
 	f, err := os.CreateTemp("", "sample.txt")
 	f.Write([]byte("Hello world"))
