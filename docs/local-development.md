@@ -1,6 +1,6 @@
 # Local development
 
-You need running ftp server on port `20021`. With the following credentials:
+You need a running ftp server on port `20021`. With the following credentials:
 
 ```
 USERNAME=user

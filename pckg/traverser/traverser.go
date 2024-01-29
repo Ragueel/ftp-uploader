@@ -17,6 +17,7 @@ func isValidPath(filePath string, excludedPaths []string) bool {
 	return !ignoreConfig.MatchesPath(filePath)
 }
 
+// TODO: add subidrectory gitignore appending
 func GetAllFilesInDirectory(traversalRequest TraversalRequest) <-chan string {
 	result := make(chan string)
 

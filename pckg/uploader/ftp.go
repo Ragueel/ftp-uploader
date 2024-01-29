@@ -96,7 +96,6 @@ func (uploader *FtpUploader) createDirectoryIfNotExists(conn *ftp.ServerConn, up
 	directories := strings.Split(uploadFilePathDir, "/")
 
 	for i := range directories {
-
 		remoteDir := filepath.Join(directories[:i+1]...)
 		if uploader.directoryIsCreated(remoteDir) {
 			return nil

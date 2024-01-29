@@ -2,9 +2,10 @@ package config
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const uploaderFixture = `
@@ -31,6 +32,7 @@ configs:
       - .git/
       - .idea/
 `
+
 const mockIgnoreFixture = `
 .sample
 *.txt
@@ -58,6 +60,7 @@ func Test_LoadingFixtureWithGitignoreFile(t *testing.T) {
 	ignoreFile, err := os.CreateTemp("", ".ignore")
 	assert.NoError(t, err)
 	_, err = ignoreFile.Write([]byte(mockIgnoreFixture))
+	assert.NoError(t, err)
 
 	file, err := os.CreateTemp("", "mock.yaml")
 	assert.NoError(t, err)
