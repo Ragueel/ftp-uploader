@@ -3,7 +3,11 @@
 [![Release](https://img.shields.io/github/release/ragueel/ftp-uploader.svg)](https://github.com/ragueel/ftp-uploader/releases)
 ![GitHub CI](https://github.com/ragueel/ftp-uploader/actions/workflows/go.yml/badge.svg)
 
-Tired of the manual grind when it comes to uploading projects to a shared hosting with FTP access? Enter `ftp-uploader`, a robust command-line tool engineered to simplify your workflow and automate the process of deploying projects to your FTP server.
+Tired of the manual grind when it comes to uploading projects to a shared hosting with FTP access? Enter 
+
+`ftp-uploader`
+
+a robust command-line tool engineered to simplify your workflow and automate the process of deploying projects to your FTP server.
 
 ## Key Features:
 
