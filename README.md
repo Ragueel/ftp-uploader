@@ -67,7 +67,6 @@ You can configure the behaviour of the tool via the following environment variab
 |FTP_UPLOADER_PASSWORD         | password                                                   |
 |FTP_UPLOADER_HOST             | host (port should be included)                             |
 
-```
 
 ## Uploading to ftp server
 
