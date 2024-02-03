@@ -60,7 +60,7 @@ You can also provide `ignoreFile` variable in the config. It will merge lines fr
 You can configure the behaviour of the tool via the following environment variables
 
 |name                          | description                                                |
-|-------------------------------------------------------------------------------------------|
+|------------------------------|------------------------------------------------------------|
 |FTP_UPLOADER_CONNECTION_COUNT | controls how many parallel connections are created         |
 |ROOT_CONFIG_PATH              | path to your ftp-upload.yaml file                          |
 |FTP_UPLOADER_USERNAME         | username                                                   |
