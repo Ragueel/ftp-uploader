@@ -57,18 +57,16 @@ configs:
 
 You can also provide `ignoreFile` variable in the config. It will merge lines from the file with `ignorePaths`
 
-By default, to authenticate the command uses the following environment variables
+You can configure the behaviour of the tool via the following environment variables
 
-```
-FTP_UPLOADER_USERNAME
-FTP_UPLOADER_PASSWORD
-FTP_UPLOADER_HOST
-```
+|name                          | description                                                |
+|-------------------------------------------------------------------------------------------|
+|FTP_UPLOADER_CONNECTION_COUNT | controls how many parallel connections are created         |
+|ROOT_CONFIG_PATH              | path to your ftp-upload.yaml file                          |
+|FTP_UPLOADER_USERNAME         | username                                                   |
+|FTP_UPLOADER_PASSWORD         | password                                                   |
+|FTP_UPLOADER_HOST             | host (port should be included)                             |
 
-There are also some optional environment variables that might be useful
-```
-FTP_UPLOADER_CONNECTION_COUNT # controls how many parallel connections are created
-ROOT_CONFIG_PATH # path to your ftp-upload.yaml file
 ```
 
 ## Uploading to ftp server
