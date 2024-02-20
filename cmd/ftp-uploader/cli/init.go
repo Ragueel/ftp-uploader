@@ -2,9 +2,10 @@ package cli
 
 import (
 	"fmt"
-	"ftp-uploader/pckg/config"
-	"github.com/spf13/cobra"
+	"ftp-uploader/pkg/config"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
 var InitCommand = &cobra.Command{

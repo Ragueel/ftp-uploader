@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"ftp-uploader/pckg/config"
-	"ftp-uploader/pckg/uploadcontroller"
+	"ftp-uploader/pkg/config"
+	"ftp-uploader/pkg/uploadcontroller"
 	"os"
 
 	"github.com/spf13/cobra"

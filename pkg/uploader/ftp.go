@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"ftp-uploader/pckg/config"
+	"ftp-uploader/pkg/config"
 	"os"
 	"path/filepath"
 	"strings"
