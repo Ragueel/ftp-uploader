@@ -119,8 +119,6 @@ func (uploader *FtpUploader) createDirectoryIfNotExists(conn *ftp.ServerConn, up
 			if err != nil {
 				return fmt.Errorf("failed to reset directory: %w", err)
 			}
-
-			uploader.PreCreatedDirectories[remoteDir] = true
 		}
 
 		uploader.putInCreatedDirectories(remoteDir)
