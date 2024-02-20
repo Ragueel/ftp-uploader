@@ -15,7 +15,7 @@ import (
 
 type FtpUploader struct {
 	authConfig            config.AuthCredentials
-	directoriesMutex      sync.RWMutex
+	directoriesMutex      *sync.RWMutex
 	PreCreatedDirectories map[string]bool
 	connQueue             chan *ftp.ServerConn
 	allConnections        []*ftp.ServerConn
@@ -24,7 +24,7 @@ type FtpUploader struct {
 func NewFtpUploader(ctx context.Context, authConfig config.AuthCredentials, connectionCount int) (*FtpUploader, error) {
 	uploader := FtpUploader{
 		authConfig:            authConfig,
-		directoriesMutex:      sync.RWMutex{},
+		directoriesMutex:      &sync.RWMutex{},
 		allConnections:        make([]*ftp.ServerConn, 0),
 		connQueue:             make(chan *ftp.ServerConn, connectionCount),
 		PreCreatedDirectories: make(map[string]bool),
