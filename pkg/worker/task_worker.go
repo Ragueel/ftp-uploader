@@ -12,9 +12,9 @@ type Result struct {
 }
 
 type Pool struct {
-	WorkersCount int
 	jobs         chan Job
 	Results      chan Result
+	WorkersCount int
 }
 
 type ExecutionFn func(ctx context.Context) (interface{}, error)

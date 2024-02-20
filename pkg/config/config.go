@@ -18,13 +18,13 @@ type AuthCredentials struct {
 }
 
 type UploadSettings struct {
-	ConnectionCount int              `yaml:"connectionCount,omitempty"`
 	AuthCredentials *AuthCredentials `yaml:"authConfig,omitempty"`
 	LocalRootPath   string           `yaml:"root"`
 	UploadRootPath  string           `yaml:"uploadRoot"`
 	Name            string           `yaml:"name,omitempty"`
 	IgnoreFile      string           `yaml:"ignoreFile,omitempty"`
 	IgnorePaths     []string         `yaml:"ignorePaths"`
+	ConnectionCount int              `yaml:"connectionCount,omitempty"`
 }
 
 type Root struct {

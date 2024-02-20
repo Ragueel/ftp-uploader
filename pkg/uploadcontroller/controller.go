@@ -13,8 +13,8 @@ import (
 )
 
 type Controller struct {
-	maxWorkerCount int
 	Uploader       uploader.Uploader
+	maxWorkerCount int
 }
 
 func NewFtpController(ctx context.Context, authConfig config.AuthCredentials, connectionCount int) (*Controller, error) {
