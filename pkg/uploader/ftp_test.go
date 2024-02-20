@@ -3,7 +3,7 @@ package uploader
 import (
 	"context"
 	"fmt"
-	"ftp-uploader/pckg/config"
+	"ftp-uploader/pkg/config"
 	"io"
 	"math/rand"
 	"os"

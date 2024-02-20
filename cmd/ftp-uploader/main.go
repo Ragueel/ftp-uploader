@@ -1,3 +1,6 @@
+/*
+Entry point for all commands
+*/
 package main
 
 import (
