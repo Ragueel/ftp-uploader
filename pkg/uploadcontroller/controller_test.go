@@ -2,8 +2,8 @@ package uploadcontroller
 
 import (
 	"context"
-	"ftp-uploader/pckg/config"
-	"ftp-uploader/pckg/uploader"
+	"ftp-uploader/pkg/config"
+	"ftp-uploader/pkg/uploader"
 	"os"
 	"testing"
 	"time"
