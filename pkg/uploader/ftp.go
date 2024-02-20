@@ -23,6 +23,7 @@ type FtpUploader struct {
 
 func NewFtpUploader(ctx context.Context, authConfig config.AuthCredentials, connectionCount int) (*FtpUploader, error) {
 	uploader := FtpUploader{
+		authConfig:            authConfig,
 		directoriesMutex:      sync.RWMutex{},
 		allConnections:        make([]*ftp.ServerConn, 0),
 		connQueue:             make(chan *ftp.ServerConn, connectionCount),
@@ -98,7 +99,7 @@ func (uploader *FtpUploader) createDirectoryIfNotExists(conn *ftp.ServerConn, up
 	for i := range directories {
 		remoteDir := filepath.Join(directories[:i+1]...)
 		if uploader.directoryIsCreated(remoteDir) {
-			return nil
+			continue
 		}
 
 		err := conn.MakeDir(remoteDir)
